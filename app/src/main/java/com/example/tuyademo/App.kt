@@ -1,12 +1,12 @@
 package com.example.tuyademo
 
 import android.app.Application
-import com.tuya.smart.sdk.TuyaSdk
+import com.thingclips.smart.home.sdk.ThingHomeSdk
 
 class App : Application() {
     override fun onCreate() {
         super.onCreate()
-        TuyaSdk.init(this)
-        TuyaSdk.setDebugMode(true)
+        ThingHomeSdk.init(this)
+        ThingHomeSdk.setDebugMode(true)
     }
 }
