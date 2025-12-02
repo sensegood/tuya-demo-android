@@ -21,11 +21,14 @@
         <activity android:name=".DeviceControlActivity" />
         <activity android:name=".DeviceListActivity" />
         <activity android:name=".PairingActivity" />
-        <activity android:name=".LoginActivity">
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 </manifest>
