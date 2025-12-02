@@ -19,7 +19,3 @@ allprojects {
         maven { url "https://maven-other.tuya.com/repository/maven-commercial-releases/" }
     }
 }
-
-tasks.register("clean", Delete) {
-    delete(rootProject.buildDir)
-}

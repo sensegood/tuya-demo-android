@@ -16,55 +16,34 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-
     buildFeatures {
         viewBinding true
     }
-}
 
-repositories {
-    google()
-    mavenCentral()
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 
-    // Tuya/Thingclips Maven repository
-    maven { url "https://maven-other.tuya.com/repository/maven-releases/" }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
 
 dependencies {
-
-    // -------------------------
-    // Tuya SDK (필수 모듈)
-    // -------------------------
+    // Tuya Basic SDK
     implementation "com.thingclips.smart:thingsmart-core:6.11.0"
     implementation "com.thingclips.smart:thingsmart-common:6.11.0"
     implementation "com.thingclips.smart:thingsmart-device:6.11.0"
     implementation "com.thingclips.smart:thingsmart-activator:6.11.0"
 
-    // Pairing BizBundle
-    api enforcedPlatform("com.thingclips.smart:thingsmart-BizBundlesBom:6.11.0")
-    implementation "com.thingclips.smart:ThingSmartActivatorExtraBizBundle"
-
-    // -------------------------
-    // Third-party deps
-    // -------------------------
+    // Third-party
     implementation "com.squareup.okhttp3:okhttp-urlconnection:3.14.9"
     implementation "com.alibaba:fastjson:1.1.67.android"
 
-    // -------------------------
     // AndroidX
-    // -------------------------
     implementation "androidx.core:core-ktx:1.13.1"
     implementation "androidx.appcompat:appcompat:1.6.1"
     implementation "com.google.android.material:material:1.12.0"
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-
-    testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
 }
