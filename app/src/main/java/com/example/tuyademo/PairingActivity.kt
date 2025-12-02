@@ -1,17 +1,15 @@
 package com.example.tuyademo
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.tuyademo.databinding.ActivityPairingBinding
-import com.tuya.smart.android.common.utils.L
-import com.tuya.smart.android.device.api.ITuyaActivator
-import com.tuya.smart.android.device.api.ITuyaSmartActivatorListener
-import com.tuya.smart.android.mvp.bean.Result
-import com.tuya.smart.home.sdk.TuyaHomeSdk
-import com.tuya.smart.home.sdk.bean.MultiModeActivatorBean
-import com.tuya.smart.sdk.bean.DeviceBean
-import com.tuya.smart.sdk.enums.ActivatorModelEnum
+import com.thingclips.smart.home.sdk.builder.ActivatorBuilder
+import com.thingclips.smart.sdk.api.ITuyaActivator
+import com.thingclips.smart.sdk.api.ITuyaActivatorGetToken
+import com.thingclips.smart.sdk.api.ITuyaSmartActivatorListener
+import com.thingclips.smart.sdk.enums.ActivatorModelEnum
 
 class PairingActivity : AppCompatActivity() {
 
@@ -23,84 +21,77 @@ class PairingActivity : AppCompatActivity() {
         binding = ActivityPairingBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.startPairingButton.setOnClickListener {
-            val homeId = intent.getLongExtra(EXTRA_HOME_ID, 0L).takeIf { it > 0 }
-                ?: binding.homeIdInput.text.toString().toLongOrNull()
-            val ssid = binding.ssidInput.text.toString()
-            val password = binding.passwordInput.text.toString()
-
-            if (homeId == null || homeId <= 0L) {
-                Toast.makeText(this, "Enter a valid Home ID", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            if (ssid.isBlank()) {
-                Toast.makeText(this, "Enter Wi-Fi SSID", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            requestTokenAndStart(homeId, ssid, password)
-        }
-
-        binding.stopPairingButton.setOnClickListener {
-            activator?.stop()
-            Toast.makeText(this, "Pairing stopped", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun requestTokenAndStart(homeId: Long, ssid: String, password: String) {
-        TuyaHomeSdk.getActivatorInstance().getActivatorToken(homeId, object : Result.Listener<String> {
-            override fun onFailure(p0: String?, p1: String?) {
-                val message = "Token error: ${'$'}p0 - ${'$'}p1"
-                Toast.makeText(this@PairingActivity, message, Toast.LENGTH_LONG).show()
-            }
-
-            override fun onSuccess(token: String?) {
-                startMultiModeActivator(homeId, ssid, password, token.orEmpty())
-            }
-        })
-    }
-
-    private fun startMultiModeActivator(homeId: Long, ssid: String, password: String, token: String) {
-        val listener = object : ITuyaSmartActivatorListener {
-            override fun onError(errorCode: String?, errorMsg: String?) {
-                val message = "Pairing failed: ${'$'}errorCode - ${'$'}errorMsg"
-                Toast.makeText(this@PairingActivity, message, Toast.LENGTH_LONG).show()
-            }
-
-            override fun onActiveSuccess(deviceBean: DeviceBean?) {
-                val message = "Device paired: ${'$'}{deviceBean?.name ?: "Unknown"}"
-                Toast.makeText(this@PairingActivity, message, Toast.LENGTH_LONG).show()
-            }
-
-            override fun onStep(step: String?, data: Any?) {
-                L.d("PairingActivity", "step=${'$'}step data=${'$'}data")
-            }
-        }
-
-        val activatorBean = MultiModeActivatorBean.Builder()
-            .setContext(this)
-            .setPassword(password)
-            .setSsid(ssid)
-            .setActivatorModel(ActivatorModelEnum.TY_EZ_MULTI_MODE)
-            .setTimeOut(120)
-            .setToken(token)
-            .setHomeId(homeId)
-            .setListener(listener)
-            .build()
-
-        activator?.stop()
-        activator = TuyaHomeSdk.getActivatorInstance().newMultiModeActivator(activatorBean)
-        activator?.start()
-        Toast.makeText(this, "Pairing started", Toast.LENGTH_SHORT).show()
+        binding.startEzButton.setOnClickListener { requestTokenAndStart() }
+        startBleScan()
     }
 
     override fun onDestroy() {
+        super.onDestroy()
         activator?.stop()
         activator?.onDestroy()
-        super.onDestroy()
     }
 
-    companion object {
-        const val EXTRA_HOME_ID = "home_id"
+    private fun requestTokenAndStart() {
+        val ssid = binding.ssidInput.text.toString()
+        val password = binding.passwordInput.text.toString()
+        binding.pairingStatus.text = "Requesting token..."
+
+        TuyaHomeSdk.getActivatorInstance().getActivatorToken(
+            0,
+            object : ITuyaActivatorGetToken {
+                override fun onSuccess(token: String?) {
+                    binding.pairingStatus.text = "Token acquired"
+                    if (!token.isNullOrEmpty()) {
+                        startEzActivator(token, ssid, password)
+                    }
+                }
+
+                override fun onFailure(errorCode: String?, errorMsg: String?) {
+                    binding.pairingStatus.text = "Token failed: $errorCode $errorMsg"
+                }
+            }
+        )
+    }
+
+    private fun startEzActivator(token: String, ssid: String, password: String) {
+        activator?.stop()
+        activator = TuyaHomeSdk.getActivatorInstance().newActivator(
+            ActivatorBuilder()
+                .setContext(this)
+                .setSsid(ssid)
+                .setPassword(password)
+                .setActivatorModel(ActivatorModelEnum.TY_EZ)
+                .setToken(token)
+                .setTimeOut(120)
+                .setListener(object : ITuyaSmartActivatorListener {
+                    override fun onError(errorCode: String?, errorMsg: String?) {
+                        binding.pairingStatus.text = "Error: $errorCode $errorMsg"
+                    }
+
+                    override fun onActiveSuccess(deviceBean: com.thingclips.smart.sdk.bean.DeviceBean?) {
+                        binding.pairingStatus.text = "Success: ${deviceBean?.devId ?: ""}"
+                    }
+
+                    override fun onStep(step: String?, data: Any?) {
+                        binding.pairingStatus.text = "Step: $step"
+                    }
+                })
+        )
+        activator?.start()
+    }
+
+    private fun startBleScan() {
+        try {
+            val bleManager = TuyaHomeSdk.getBleManager()
+            val method = bleManager.javaClass.methods.firstOrNull { it.name == "startLeScan" && it.parameterTypes.isEmpty() }
+            if (method != null) {
+                method.invoke(bleManager)
+                Toast.makeText(this, "BLE scan started", Toast.LENGTH_SHORT).show()
+            } else {
+                Log.w("PairingActivity", "startLeScan with no args not found")
+            }
+        } catch (e: Exception) {
+            Log.e("PairingActivity", "BLE scan failed", e)
+        }
     }
 }

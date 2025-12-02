@@ -1,13 +1,21 @@
-*.iml
-.gradle
+# Android
+.gradle/
 /local.properties
-/.idea
+/.idea/
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-app/build
+/build/
+app/build/
+*/build/
+/captures/
+.externalNativeBuild/
+.cxx/
 
-# Gradle wrapper binary
+
+# Signing
+keystore.jks
+*.keystore
+*.jks
+
+# Gradle wrapper binary (kept locally but not checked in)
 gradle/wrapper/gradle-wrapper.jar
+
