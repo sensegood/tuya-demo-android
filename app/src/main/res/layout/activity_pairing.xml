@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EZ + BLE Pairing"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large" />
+
+        <EditText
+            android:id="@+id/homeIdInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Home ID"
+            android:inputType="number" />
+
+        <EditText
+            android:id="@+id/ssidInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wi-Fi SSID"
+            android:inputType="text" />
+
+        <EditText
+            android:id="@+id/passwordInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wi-Fi Password"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/startPairingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Pairing"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/stopPairingButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stop Pairing"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Pairing runs for EZ + BLE multi-mode using Tuya SDK." />
+
+    </LinearLayout>
+</ScrollView>
